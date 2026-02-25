@@ -108,11 +108,10 @@ public class CalamitySyncFix : Mod
             float cy = r.ReadSingle();
             float vx = r.ReadSingle();
             float vy = r.ReadSingle();
-            byte dashT = r.ReadByte(); // ✅ 추가
+            byte dashT = r.ReadByte();
 
             if (Main.netMode == NetmodeID.Server)
             {
-                // 서버 적용은 선택(보통은 안 건드려도 됨)
                 ModPacket p = GetPacket();
                 p.Write((byte)PacketKind.SyncDash);
                 p.Write(who);
@@ -127,11 +126,11 @@ public class CalamitySyncFix : Mod
                 return;
 
             Player other = Main.player[who];
-            if (other != null && other.active)
+            if (Main.myPlayer != who)
             {
-                other.Center = new Microsoft.Xna.Framework.Vector2(cx, cy);
-                other.velocity = new Microsoft.Xna.Framework.Vector2(vx, vy);
-                // dashT는 필요하면 저장해서 보간에 사용 가능
+                DashSmoother.SetTarget(who,
+                    new Vector2(cx, cy),
+                    new Vector2(vx, vy));
             }
         }
     }
