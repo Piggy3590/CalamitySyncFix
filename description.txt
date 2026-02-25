@@ -1,0 +1,1 @@
+Fixes some multiplayer synchronization issues, such as hotkey dash and Ark weapon animations.
