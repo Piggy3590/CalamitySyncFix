@@ -1,4 +1,5 @@
-Have you ever encountered desync issues while playing Calamity?
+Have you ever felt disappointed that your awesome weapon wasn't visible to others,
+or annoyed when your friend's projectiles wouldn't disappear?
 
 This mod fixes some multiplayer desync issues in Calamity Mod, Like Fractured Ark, Galaxy Smasher.
 
