@@ -49,6 +49,13 @@ public class HammerApplier : ISyncApplier
             return;
         }
 
+        string projectileName = proj.ModProjectile?.GetType().Name ?? string.Empty;
+        if (!SyncConfigAccess.IsMeleeProjectileSyncEnabled(projectileName))
+        {
+            Consume(r, count);
+            return;
+        }
+
         // collect payload
         byte kind = 255;
         int returnhammer = 0;

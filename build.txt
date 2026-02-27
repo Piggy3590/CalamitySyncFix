@@ -1,3 +1,4 @@
+name = CalamitySyncFix
 displayName = Calamity Multiplayer Sync Fix
 author = Piggy
 version = 0.1.1

@@ -66,6 +66,9 @@ public class ArkAttacksFix : GlobalProjectile
 
         string n = projectile.ModProjectile?.GetType().Name ?? "";
 
+        if (!SyncConfigAccess.IsMeleeProjectileSyncEnabled(n))
+            return;
+
         bool isParryHoldout = (n == CosmosParryHoldout || n == ElementsParryHoldout);
 
         // -------------------------

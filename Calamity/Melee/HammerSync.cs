@@ -21,6 +21,7 @@ namespace CalamitySyncFix.Calamity.Melee
         private int _lastTime = int.MinValue;    // time
         private int _lastEmp = int.MinValue;     // player stack (GalaxyHammer / PHAThammer / Holyhammer)
         private int _lastTarget = int.MinValue;  // ai[1] npc index
+        private int _sendDelayRemaining;
 
         public override bool AppliesToEntity(Projectile entity, bool lateInstantiation)
         {
@@ -33,6 +34,21 @@ namespace CalamitySyncFix.Calamity.Melee
                 || entity.ModProjectile is PwnagehammerProj;
         }
 
+        private bool CanSendThisTick(int tickDelay)
+        {
+            if (tickDelay <= 0)
+                return true;
+
+            if (_sendDelayRemaining > 0)
+            {
+                _sendDelayRemaining--;
+                return false;
+            }
+
+            _sendDelayRemaining = tickDelay;
+            return true;
+        }
+
         public override void AI(Projectile projectile)
         {
             // skip non-owner
@@ -40,6 +56,10 @@ namespace CalamitySyncFix.Calamity.Melee
                 return;
 
             Player owner = Main.player[projectile.owner];
+            string projectileName = projectile.ModProjectile?.GetType().Name ?? string.Empty;
+
+            if (!SyncConfigAccess.IsMeleeProjectileSyncEnabled(projectileName))
+                return;
 
             // ---- GalaxySmasherHammer ----
             if (projectile.ModProjectile is GalaxySmasherHammer g)
@@ -57,6 +77,9 @@ namespace CalamitySyncFix.Calamity.Melee
                     targetNpc != _lastTarget;
 
                 if (!changed)
+                    return;
+                
+                if (!CanSendThisTick(SyncConfigAccess.GetHammerTickDelay(projectileName)))
                     return;
                 
                 byte soundTrigger = 0;
@@ -106,6 +129,9 @@ namespace CalamitySyncFix.Calamity.Melee
                     targetNpc != _lastTarget;
 
                 if (!changed)
+                    return;
+                
+                if (!CanSendThisTick(SyncConfigAccess.GetHammerTickDelay(projectileName)))
                     return;
                 
                 byte soundTrigger = 0;
@@ -165,6 +191,9 @@ namespace CalamitySyncFix.Calamity.Melee
                 if (!changed)
                     return;
 
+                if (!CanSendThisTick(SyncConfigAccess.GetHammerTickDelay(projectileName)))
+                    return;
+
                 var fields = new List<SyncField>(5)
                 {
                     SyncField.U(HammerField.Kind, 2),
@@ -196,6 +225,9 @@ namespace CalamitySyncFix.Calamity.Melee
                     targetNpc != _lastTarget;
 
                 if (!changed)
+                    return;
+
+                if (!CanSendThisTick(SyncConfigAccess.GetHammerTickDelay(projectileName)))
                     return;
 
                 var fields = new List<SyncField>(4)

@@ -21,6 +21,10 @@ namespace CalamitySyncFix.Calamity.Melee
             if (Main.netMode != NetmodeID.MultiplayerClient && projectile.owner == Main.myPlayer)
                 return;
 
+            string projectileName = projectile.ModProjectile?.GetType().Name ?? string.Empty;
+            if (!SyncConfigAccess.IsMeleeProjectileSyncEnabled(projectileName))
+                return;
+
             byte parryType = 0;
 
             if (projectile.ModProjectile is ArkoftheCosmosParryHoldout cos)

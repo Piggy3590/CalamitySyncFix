@@ -1,6 +1,5 @@
 ﻿using Terraria;
 using Terraria.ModLoader;
-using Microsoft.Xna.Framework;
 using Terraria.ID;
 
 namespace CalamitySyncFix
@@ -9,7 +8,7 @@ namespace CalamitySyncFix
     {
         private int _cooldown;
 
-        // Dash Tick
+        // Keep an early burst so dash start displacement is delivered immediately
         private const int DashWindow = 30;
 
         public override void PostUpdate()
@@ -23,34 +22,22 @@ namespace CalamitySyncFix
             int t = Player.timeSinceLastDashStarted;
 
             // Init Dash~DashWindow
-            bool dashing = (t >= 0 && t <= DashWindow);
-
+            bool dashing = t is >= 0 and <= DashWindow;
+            
             if (!dashing)
             {
                 _cooldown = 0;
                 return;
             }
 
-            // two ticks
+            // Vanilla-like movement sync burst while dash is active
             if (_cooldown-- > 0)
                 return;
 
             _cooldown = 2;
 
-            var mod = ModContent.GetInstance<CalamitySyncFix>();
-            ModPacket p = mod.GetPacket();
-            p.Write((byte)CalamitySyncFix.PacketKind.SyncDash);
-            p.Write((byte)Player.whoAmI);
-
-            Vector2 c = Player.Center;
-            Vector2 v = Player.velocity;
-
-            p.Write(c.X); p.Write(c.Y);
-            p.Write(v.X); p.Write(v.Y);
-
-            p.Write((byte)t);
-
-            p.Send(); // to server
+            NetMessage.SendData(MessageID.PlayerControls, number: Player.whoAmI);
+            NetMessage.SendData(MessageID.SyncPlayer, number: Player.whoAmI);
         }
     }
 }

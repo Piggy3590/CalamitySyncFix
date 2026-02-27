@@ -15,14 +15,7 @@ public class ArkApplier : ISyncApplier
         string n = p.ModProjectile.GetType().Name;
 
         return n == "ArkoftheCosmosParryHoldout"
-               || n == "ArkoftheElementsParryHoldout"
-               || n == "ArkoftheCosmosSwungBlade"
-               || n == "ArkoftheElementsSwungBlade"
-               || n == "ArkoftheAncientsSwungBlade"
-               || n == "TrueArkoftheAncientsSwungBlade"
-               || n == "ArkoftheAncientsParryHoldout"
-               || n == "TrueArkoftheAncientsParryHoldout"
-               || n == "ArkoftheCosmosBlast";
+               || n == "ArkoftheElementsParryHoldout";
     }
     
     public void Apply(int owner, int identity, BinaryReader r, int count)
@@ -57,6 +50,12 @@ public class ArkApplier : ISyncApplier
 
         string n = proj.ModProjectile.GetType().Name;
         if (!IsArkProjectile(proj))
+        {
+            Consume(r, count);
+            return;
+        }
+
+        if (!SyncConfigAccess.IsMeleeProjectileSyncEnabled(n))
         {
             Consume(r, count);
             return;

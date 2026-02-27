@@ -37,9 +37,8 @@ public class CalamitySyncFix : Mod
     public enum PacketKind : byte
     {
         SyncVars = 1,
-        SyncDash = 2,
-        HammerSound = 3,
-        ParrySound = 4,
+        HammerSound = 2,
+        ParrySound = 3,
     }
     public enum HammerSoundEvent : byte
     {
@@ -112,37 +111,6 @@ public class CalamitySyncFix : Mod
                 return;
             }
             applier.Apply(owner, identity, r, count);
-        }else if (kind == PacketKind.SyncDash)
-        {
-            byte who = r.ReadByte();
-            float cx = r.ReadSingle();
-            float cy = r.ReadSingle();
-            float vx = r.ReadSingle();
-            float vy = r.ReadSingle();
-            byte dashT = r.ReadByte();
-
-            if (Main.netMode == NetmodeID.Server)
-            {
-                ModPacket p = GetPacket();
-                p.Write((byte)PacketKind.SyncDash);
-                p.Write(who);
-                p.Write(cx); p.Write(cy);
-                p.Write(vx); p.Write(vy);
-                p.Write(dashT);
-                p.Send();
-                return;
-            }
-
-            if (Main.myPlayer == who)
-                return;
-
-            Player other = Main.player[who];
-            if (Main.myPlayer != who)
-            {
-                DashSmoother.SetTarget(who,
-                    new Vector2(cx, cy),
-                    new Vector2(vx, vy));
-            }
         }else if (kind == PacketKind.HammerSound)
         {
             HammerSoundEvent ev = (HammerSoundEvent)r.ReadByte();
