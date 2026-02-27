@@ -179,7 +179,7 @@ public class CalamitySyncFix : Mod
             float cx = r.ReadSingle();
             float cy = r.ReadSingle();
 
-            // 🔥 Hitbox 수신
+            //  Hitbox Received
             int hx = r.ReadInt32();
             int hy = r.ReadInt32();
             int hw = r.ReadInt32();
@@ -269,4 +269,5 @@ public struct SyncField
     public static SyncField F(byte id, float v) => new() { FieldId = id, TypeId = SyncType.Float, F32 = v };
     public static SyncField U(byte id, byte v) => new() { FieldId = id, TypeId = SyncType.Byte, U8 = v };
     public static SyncField Bool(byte id, bool v) => new() { FieldId = id, TypeId = SyncType.Bool, B = v };
+
 }
