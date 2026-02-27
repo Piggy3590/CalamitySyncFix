@@ -23,6 +23,8 @@ public class GalaxySmasherEchoFix : GlobalProjectile
 
     public override void AI(Projectile projectile)
     {
+        if (Main.netMode != NetmodeID.MultiplayerClient)
+            return;
         NPC targeted = Main.npc[(int)projectile.ai[1]];
         if (projectile.Hitbox.Intersects(targeted.Hitbox))
         {

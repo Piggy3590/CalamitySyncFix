@@ -1,8 +1,12 @@
 using System.IO;
 using System.Collections.Generic;
+using CalamityMod;
+using CalamityMod.Projectiles.Melee;
+using CalamityMod.Sounds;
 using CalamitySyncFix.Calamity.Melee;
 using Microsoft.Xna.Framework;
 using Terraria;
+using Terraria.Audio;
 using Terraria.ID;
 using Terraria.ModLoader;
 
@@ -34,6 +38,13 @@ public class CalamitySyncFix : Mod
     {
         SyncVars = 1,
         SyncDash = 2,
+        HammerSound = 3,
+        ParrySound = 4,
+    }
+    public enum HammerSoundEvent : byte
+    {
+        Use = 1,     // returnhammer == 2 진입(던지기/사용)
+        RedHam = 2,  // returnhammer == 3 진입(강공/폭발)
     }
     
     public override void HandlePacket(BinaryReader r, int whoAmI)
@@ -132,6 +143,106 @@ public class CalamitySyncFix : Mod
                     new Vector2(cx, cy),
                     new Vector2(vx, vy));
             }
+        }else if (kind == PacketKind.HammerSound)
+        {
+            HammerSoundEvent ev = (HammerSoundEvent)r.ReadByte();
+            byte hammerKind = r.ReadByte();
+            float x = r.ReadSingle();
+            float y = r.ReadSingle();
+            float pitch = r.ReadSingle();
+
+            if (Main.dedServ)
+                return;
+
+            var pos = new Vector2(x, y);
+            
+            switch (hammerKind)
+            {
+                case 0: // Galaxy
+                    if (ev == HammerSoundEvent.Use)
+                    {
+                        if (Main.zenithWorld)
+                            SoundEngine.PlaySound(GalaxySmasherHammer.UseSoundFunny with { Pitch = pitch }, pos);
+                        else
+                            SoundEngine.PlaySound(GalaxySmasherHammer.UseSound with { Pitch = pitch }, pos);
+                    }
+                    else if (ev == HammerSoundEvent.RedHam)
+                    {
+                        SoundEngine.PlaySound(GalaxySmasherHammer.RedHamSound, pos);
+                    }
+                    break;
+
+                case 1: // Stellar
+                    if (ev == HammerSoundEvent.Use)
+                    {
+                        if (Main.zenithWorld)
+                            SoundEngine.PlaySound(StellarContemptHammer.UseSoundFunny with { Pitch = pitch }, pos);
+                        else
+                            SoundEngine.PlaySound(StellarContemptHammer.UseSound with { Pitch = pitch }, pos);
+                    }
+                    else if (ev == HammerSoundEvent.RedHam)
+                    {
+                        SoundEngine.PlaySound(StellarContemptHammer.RedHamSound, pos);
+                    }
+                    break;
+
+                case 2: // Fallen
+                    if (ev == HammerSoundEvent.Use)
+                    {
+                        if (Main.zenithWorld)
+                            SoundEngine.PlaySound(FallenPaladinsHammerProj.UseSoundFunny with { Pitch = pitch }, pos);
+                        else
+                            SoundEngine.PlaySound(FallenPaladinsHammerProj.UseSound with { Pitch = pitch }, pos);
+                    }
+                    else if (ev == HammerSoundEvent.RedHam)
+                    {
+                        SoundEngine.PlaySound(FallenPaladinsHammerProj.RedHamSound, pos);
+                    }
+                    break;
+                
+                case 3:
+                    break;
+            }
+            return;
+        }else if (kind == PacketKind.ParrySound)
+        {
+            byte parryType = r.ReadByte();
+
+            float cx = r.ReadSingle();
+            float cy = r.ReadSingle();
+
+            // 🔥 Hitbox 수신
+            int hx = r.ReadInt32();
+            int hy = r.ReadInt32();
+            int hw = r.ReadInt32();
+            int hh = r.ReadInt32();
+
+            if (Main.dedServ)
+                return;
+
+            Vector2 pos = new Vector2(cx, cy);
+            Rectangle hitbox = new Rectangle(hx, hy, hw, hh);
+            CombatText.NewText(hitbox, new Color(111, 247, 200), CalamityUtils.GetTextValue("Misc.ArkParry"), true);
+
+            // 필요하면 디버그
+            // Main.NewText($"HB: {hitbox}");
+
+            SoundEngine.PlaySound(SoundID.DD2_WitherBeastCrystalImpact, pos);
+
+            if (parryType == 1 || parryType == 2)
+            {
+                SoundEngine.PlaySound(
+                    CommonCalamitySounds.ScissorGuillotineSnapSound with
+                    {
+                        Volume = CommonCalamitySounds.ScissorGuillotineSnapSound.Volume * 1.3f
+                    }, pos);
+            }
+            else
+            {
+                SoundEngine.PlaySound(SoundID.Item67, pos);
+            }
+
+            return;
         }
     }
 

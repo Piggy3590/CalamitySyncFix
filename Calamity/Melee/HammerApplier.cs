@@ -10,7 +10,7 @@ namespace CalamitySyncFix.Calamity.Melee;
 
 public static class HammerField
 {
-    public const byte Kind = 1;          // byte: 0=Galaxy,1=Fallen,2=Pwnage
+    public const byte Kind = 1;          // byte: 0=Galaxy,1=Stella,2=Fallen,3=Pwnage
     public const byte ReturnHammer = 2;  // int
     public const byte Time = 3;          // int
     public const byte WaitTimer = 4;     // float (Galaxy Smasher)
@@ -18,6 +18,7 @@ public static class HammerField
     public const byte InPulse = 6;       // int (Galaxy Smasher)
     public const byte Empowered = 7;     // int (stack)
     public const byte TargetNpc = 8;     // int (ai[1] as npc whoAmI)
+    public const byte SoundTrigger = 9; // byte: 0=none,1=use,2=red
 }
 
 public class HammerApplier : ISyncApplier
@@ -57,6 +58,7 @@ public class HammerApplier : ISyncApplier
         int targetNpc = -1;
         float wait = 0f;
         float prep = 0f;
+        byte soundTrigger = 0;
 
         for (int i = 0; i < count; i++)
         {
@@ -96,6 +98,10 @@ public class HammerApplier : ISyncApplier
                 case HammerField.TargetNpc:
                     targetNpc = ReadInt(typeId, r);
                     break;
+                
+                case HammerField.SoundTrigger:
+                    soundTrigger = ReadByte(typeId, r);
+                    break;
 
                 default:
                     Skip(typeId, r);
@@ -108,21 +114,6 @@ public class HammerApplier : ISyncApplier
         // Hammer types
         if (kind == 0 && proj.ModProjectile is GalaxySmasherHammer g)
         {
-            if (Main.myPlayer != owner && returnhammer != g.returnhammer)
-            {
-                if (g.returnhammer == 2)
-                {
-                    if (Main.zenithWorld)
-                        SoundEngine.PlaySound(GalaxySmasherHammer.UseSoundFunny with { Pitch = emp * 0.05f - 0.05f }, proj.Center);
-                    else
-                        SoundEngine.PlaySound(GalaxySmasherHammer.UseSound with { Pitch = emp * 0.05f - 0.05f }, proj.Center);
-                }
-                else if (g.returnhammer == 3)
-                {
-                    SoundEngine.PlaySound(GalaxySmasherHammer.RedHamSound, proj.Center);
-                }
-            }
-            
             g.returnhammer = returnhammer;
             g.time = time;
             g.WaitTimer = wait;
@@ -133,6 +124,21 @@ public class HammerApplier : ISyncApplier
 
             // stack ModPlayer
             plr.Calamity().GalaxyHammer = emp;
+            
+            if (soundTrigger != 0)
+            {
+                if (soundTrigger == 1)
+                {
+                    if (Main.zenithWorld)
+                        SoundEngine.PlaySound(GalaxySmasherHammer.UseSoundFunny with { Pitch = emp * 0.05f - 0.05f }, proj.Center);
+                    else
+                        SoundEngine.PlaySound(GalaxySmasherHammer.UseSound with { Pitch = emp * 0.05f - 0.05f }, proj.Center);
+                }
+                else if (soundTrigger == 2)
+                {
+                    SoundEngine.PlaySound(GalaxySmasherHammer.RedHamSound, proj.Center);
+                }
+            }
 
             proj.netUpdate = true;
             return;
@@ -140,21 +146,6 @@ public class HammerApplier : ISyncApplier
 
         if (kind == 1 && proj.ModProjectile is StellarContemptHammer s)
         {
-            if (Main.myPlayer != owner && returnhammer != s.returnhammer)
-            {
-                if (s.returnhammer == 2)
-                {
-                    if (Main.zenithWorld)
-                        SoundEngine.PlaySound(StellarContemptHammer.UseSoundFunny with { Pitch = emp * 0.1f - 0.1f }, proj.Center);
-                    else
-                        SoundEngine.PlaySound(StellarContemptHammer.UseSound with { Pitch = emp * 0.1f - 0.1f }, proj.Center);
-                }
-                else if (s.returnhammer == 3)
-                {
-                    SoundEngine.PlaySound(StellarContemptHammer.RedHamSound, proj.Center);
-                }
-            }
-            
             s.returnhammer = returnhammer;
             s.time = time;
 
@@ -162,39 +153,55 @@ public class HammerApplier : ISyncApplier
 
             // stack ModPlayer
             plr.Calamity().StellarHammer = emp;
+            
+            if (soundTrigger != 0)
+            {
+                if (soundTrigger == 1)
+                {
+                    if (Main.zenithWorld)
+                        SoundEngine.PlaySound(StellarContemptHammer.UseSoundFunny with { Pitch = emp * 0.1f - 0.1f }, proj.Center);
+                    else
+                        SoundEngine.PlaySound(StellarContemptHammer.UseSound with { Pitch = emp * 0.1f - 0.1f }, proj.Center);
+                }
+                else if (soundTrigger == 2)
+                {
+                    SoundEngine.PlaySound(StellarContemptHammer.RedHamSound, proj.Center);
+                }
+            }
 
             proj.netUpdate = true;
             return;
         }
 
-        if (kind == 1 && proj.ModProjectile is FallenPaladinsHammerProj f)
+        if (kind == 2 && proj.ModProjectile is FallenPaladinsHammerProj f)
         {
-            if (Main.myPlayer != owner && returnhammer != f.returnhammer)
-            {
-                if (f.returnhammer == 2)
-                {
-                    if (Main.zenithWorld)
-                        SoundEngine.PlaySound(FallenPaladinsHammerProj.UseSoundFunny with { Pitch = emp * 0.2f - 0.4f }, proj.Center);
-                    else
-                        SoundEngine.PlaySound(FallenPaladinsHammerProj.UseSound with { Pitch = emp * 0.2f - 0.4f }, proj.Center);
-                }
-                else if (f.returnhammer == 3)
-                {
-                    SoundEngine.PlaySound(FallenPaladinsHammerProj.RedHamSound, proj.Center);
-                }
-            }
             f.returnhammer = returnhammer;
             f.time = time;
 
             proj.ai[1] = targetNpc;
 
             plr.Calamity().PHAThammer = emp;
+            
+            if (soundTrigger != 0)
+            {
+                if (soundTrigger == 1)
+                {
+                    if (Main.zenithWorld)
+                        SoundEngine.PlaySound(FallenPaladinsHammerProj.UseSoundFunny with { Pitch = emp * 0.2f - 0.4f }, proj.Center);
+                    else
+                        SoundEngine.PlaySound(FallenPaladinsHammerProj.UseSound with { Pitch = emp * 0.2f - 0.4f }, proj.Center);
+                }
+                else if (soundTrigger == 2)
+                {
+                    SoundEngine.PlaySound(FallenPaladinsHammerProj.RedHamSound, proj.Center);
+                }
+            }
 
             proj.netUpdate = true;
             return;
         }
 
-        if (kind == 2 && proj.ModProjectile is PwnagehammerProj p)
+        if (kind == 3 && proj.ModProjectile is PwnagehammerProj p)
         {
             p.time = time;
 

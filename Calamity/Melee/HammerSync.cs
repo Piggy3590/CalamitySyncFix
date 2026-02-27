@@ -28,9 +28,9 @@ namespace CalamitySyncFix.Calamity.Melee
                 return false;
 
             return entity.ModProjectile is GalaxySmasherHammer
+                || entity.ModProjectile is StellarContemptHammer
                 || entity.ModProjectile is FallenPaladinsHammerProj
-                || entity.ModProjectile is PwnagehammerProj
-                || entity.ModProjectile is StellarContemptBlast;
+                || entity.ModProjectile is PwnagehammerProj;
         }
 
         public override void AI(Projectile projectile)
@@ -58,14 +58,16 @@ namespace CalamitySyncFix.Calamity.Melee
 
                 if (!changed)
                     return;
+                
+                byte soundTrigger = 0;
 
-                _lastState = g.returnhammer;
-                _lastPrep = g.EchoHammerPrep;
-                _lastWait = g.WaitTimer;
-                _lastPulse = g.InPulse;
-                _lastTime = g.time;
-                _lastEmp = emp;
-                _lastTarget = targetNpc;
+                if (_lastState != g.returnhammer)
+                {
+                    if (g.returnhammer == 2)
+                        soundTrigger = 1;
+                    else if (g.returnhammer == 3)
+                        soundTrigger = 2;
+                }
 
                 var fields = new List<SyncField>(8)
                 {
@@ -77,7 +79,16 @@ namespace CalamitySyncFix.Calamity.Melee
                     SyncField.I(HammerField.InPulse, g.InPulse),
                     SyncField.I(HammerField.Empowered, emp),
                     SyncField.I(HammerField.TargetNpc, targetNpc),
+                    SyncField.U(HammerField.SoundTrigger, soundTrigger),
                 };
+
+                _lastState = g.returnhammer;
+                _lastPrep = g.EchoHammerPrep;
+                _lastWait = g.WaitTimer;
+                _lastPulse = g.InPulse;
+                _lastTime = g.time;
+                _lastEmp = emp;
+                _lastTarget = targetNpc;
 
                 CalamitySyncFix.SendVars("Calamity:Hammers", projectile, fields);
                 return;
@@ -87,7 +98,7 @@ namespace CalamitySyncFix.Calamity.Melee
             {
                 int emp = owner.Calamity().StellarHammer;
                 int targetNpc = (int)projectile.ai[1];
-
+                
                 bool changed =
                     s.returnhammer != _lastState ||
                     s.time != _lastTime ||
@@ -96,11 +107,16 @@ namespace CalamitySyncFix.Calamity.Melee
 
                 if (!changed)
                     return;
+                
+                byte soundTrigger = 0;
 
-                _lastState = s.returnhammer;
-                _lastTime = s.time;
-                _lastEmp = emp;
-                _lastTarget = targetNpc;
+                if (_lastState != s.returnhammer)
+                {
+                    if (s.returnhammer == 2)
+                        soundTrigger = 1;
+                    else if (s.returnhammer == 3)
+                        soundTrigger = 2;
+                }
 
                 var fields = new List<SyncField>(5)
                 {
@@ -109,7 +125,13 @@ namespace CalamitySyncFix.Calamity.Melee
                     SyncField.I(HammerField.Time, s.time),
                     SyncField.I(HammerField.Empowered, emp),
                     SyncField.I(HammerField.TargetNpc, targetNpc),
+                    SyncField.U(HammerField.SoundTrigger, soundTrigger),
                 };
+
+                _lastState = s.returnhammer;
+                _lastTime = s.time;
+                _lastEmp = emp;
+                _lastTarget = targetNpc;
 
                 CalamitySyncFix.SendVars("Calamity:Hammers", projectile, fields);
                 return;
@@ -120,29 +142,43 @@ namespace CalamitySyncFix.Calamity.Melee
             {
                 int emp = owner.Calamity().PHAThammer;
                 int targetNpc = (int)projectile.ai[1];
+                byte soundTrigger = 0;
+
+                if (_lastState != f.returnhammer)
+                {
+                    if (f.returnhammer == 2)
+                        soundTrigger = 1;
+                }
+                
+                if (f.returnhammer == 2 && emp == 3 && projectile.Hitbox.Intersects(Main.player[projectile.owner].Hitbox))
+                {
+                    soundTrigger = 2;
+                }
 
                 bool changed =
                     f.returnhammer != _lastState ||
                     f.time != _lastTime ||
                     emp != _lastEmp ||
-                    targetNpc != _lastTarget;
+                    targetNpc != _lastTarget ||
+                    soundTrigger != 0;
 
                 if (!changed)
                     return;
+
+                var fields = new List<SyncField>(5)
+                {
+                    SyncField.U(HammerField.Kind, 2),
+                    SyncField.I(HammerField.ReturnHammer, f.returnhammer),
+                    SyncField.I(HammerField.Time, f.time),
+                    SyncField.I(HammerField.Empowered, emp),
+                    SyncField.I(HammerField.TargetNpc, targetNpc),
+                    SyncField.U(HammerField.SoundTrigger, soundTrigger),
+                };
 
                 _lastState = f.returnhammer;
                 _lastTime = f.time;
                 _lastEmp = emp;
                 _lastTarget = targetNpc;
-
-                var fields = new List<SyncField>(5)
-                {
-                    SyncField.U(HammerField.Kind, 1),
-                    SyncField.I(HammerField.ReturnHammer, f.returnhammer),
-                    SyncField.I(HammerField.Time, f.time),
-                    SyncField.I(HammerField.Empowered, emp),
-                    SyncField.I(HammerField.TargetNpc, targetNpc),
-                };
 
                 CalamitySyncFix.SendVars("Calamity:Hammers", projectile, fields);
                 return;
@@ -162,24 +198,21 @@ namespace CalamitySyncFix.Calamity.Melee
                 if (!changed)
                     return;
 
-                _lastTime = p.time;
-                _lastEmp = emp;
-                _lastTarget = targetNpc;
-
                 var fields = new List<SyncField>(4)
                 {
-                    SyncField.U(HammerField.Kind, 2),
+                    SyncField.U(HammerField.Kind, 3),
                     SyncField.I(HammerField.Time, p.time),
                     SyncField.I(HammerField.Empowered, emp),
                     SyncField.I(HammerField.TargetNpc, targetNpc),
                 };
 
+                _lastTime = p.time;
+                _lastEmp = emp;
+                _lastTarget = targetNpc;
+
                 CalamitySyncFix.SendVars("Calamity:Hammers", projectile, fields);
                 return;
             }
-
-            // ---- StellarContemptBlast ----
-            // almost every time, timeLeft was 2 in original calamity script! no codes yay
         }
     }
 }
