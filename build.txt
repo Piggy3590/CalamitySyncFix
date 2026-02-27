@@ -1,4 +1,4 @@
 displayName = Calamity Multiplayer Sync Fix
-author = h4npiggy
-version = 0.1
+author = Piggy
+version = 0.1.1
 modReferences = CalamityMod
