@@ -30,6 +30,8 @@ public class CalamitySyncFix : Mod
         // Appliers
         Appliers["Calamity:Hammers"] = new HammerApplier();
         Appliers["Calamity:Ark"] = new ArkApplier();
+        //Appliers["Calamity:ExaltedOathblade"] = new ExaltedOathbladeApplier();
+        Appliers["Calamity:DevilsDevastation"] = new DevilsDevastationApplier();
     }
     
     public override void Unload() => Instance = null;
@@ -42,8 +44,8 @@ public class CalamitySyncFix : Mod
     }
     public enum HammerSoundEvent : byte
     {
-        Use = 1,     // returnhammer == 2 진입(던지기/사용)
-        RedHam = 2,  // returnhammer == 3 진입(강공/폭발)
+        Use = 1,     // returnhammer == 2
+        RedHam = 2,  // returnhammer == 3
     }
     
     public override void HandlePacket(BinaryReader r, int whoAmI)
@@ -179,7 +181,6 @@ public class CalamitySyncFix : Mod
             float cx = r.ReadSingle();
             float cy = r.ReadSingle();
 
-            //  Hitbox Received
             int hx = r.ReadInt32();
             int hy = r.ReadInt32();
             int hw = r.ReadInt32();
@@ -192,7 +193,6 @@ public class CalamitySyncFix : Mod
             Rectangle hitbox = new Rectangle(hx, hy, hw, hh);
             CombatText.NewText(hitbox, new Color(111, 247, 200), CalamityUtils.GetTextValue("Misc.ArkParry"), true);
 
-            // 필요하면 디버그
             // Main.NewText($"HB: {hitbox}");
 
             SoundEngine.PlaySound(SoundID.DD2_WitherBeastCrystalImpact, pos);
@@ -269,5 +269,4 @@ public struct SyncField
     public static SyncField F(byte id, float v) => new() { FieldId = id, TypeId = SyncType.Float, F32 = v };
     public static SyncField U(byte id, byte v) => new() { FieldId = id, TypeId = SyncType.Byte, U8 = v };
     public static SyncField Bool(byte id, bool v) => new() { FieldId = id, TypeId = SyncType.Bool, B = v };
-
 }
